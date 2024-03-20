@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Select Area</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      cursor: crosshair;
+    }
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="selectionCanvas"></canvas>
+  <script>
+    const canvas = document.getElementById('selectionCanvas');
+    const { ipcRenderer } = require('electron');
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+    let startX, startY;
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    canvas.addEventListener('mousedown', (e) => {
+      isDrawing = true;
+      startX = e.clientX;
+      startY = e.clientY;
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      if (!isDrawing) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const width = e.clientX - startX;
+      const height = e.clientY - startY;
+      ctx.strokeRect(startX, startY, width, height);
+    });
+
+    canvas.addEventListener('mouseup', (e) => {
+      isDrawing = false;
+      const width = e.clientX - startX;
+      const height = e.clientY - startY;
+        ipcRenderer.send('area-selected', { x: startX, y: startY, width, height });
+    
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        console.log('Escape');
+        window.close();
+      }
+    });
+  </script>
+</body>
+</html>
