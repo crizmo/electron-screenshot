@@ -5,11 +5,15 @@ let mainWindow;
 let overlayWindow;
 const screenshots = new Screenshots();
 
+
 app.on("ready", () => {
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+  
   app.commandLine.appendSwitch('disable-renderer-backgrounding');
   mainWindow = new BrowserWindow({
     show: false,
-    fullscreen: true,
+    width: width,
+    height: height,
     transparent: true,
     frame: false
   });
@@ -17,6 +21,7 @@ app.on("ready", () => {
   mainWindow.loadFile("select_area.html");
 
   globalShortcut.register("alt+q", () => {
+    mainWindow.show();
     createOverlayWindow();
   });
 });
