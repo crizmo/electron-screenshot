@@ -1,26 +1,44 @@
-const { app, globalShortcut, BrowserWindow, screen, ipcMain } = require("electron");
+const {
+  app,
+  globalShortcut,
+  BrowserWindow,
+  screen,
+  ipcMain,
+} = require("electron");
 const Screenshots = require("./screenshots");
 
 let mainWindow;
 let overlayWindow;
 const screenshots = new Screenshots();
 
-
 app.on("ready", () => {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
-  
-  app.commandLine.appendSwitch('disable-renderer-backgrounding');
+
+  app.commandLine.appendSwitch("disable-renderer-backgrounding");
   mainWindow = new BrowserWindow({
     show: false,
     width: width,
     height: height,
     transparent: true,
-    frame: false
+    frame: false,
   });
-  
+
   mainWindow.loadFile("select_area.html");
 
-  globalShortcut.register("alt+q", () => {
+  globalShortcut.register("CommandOrControl+I", () => {
+    const { systemPreferences, shell } = require("electron");
+
+    // Check screen capture permission status:
+    const status = systemPreferences.getMediaAccessStatus("screen");
+    if (status !== "granted") {
+      // Inform the user and open the Screen Recording settings page
+      console.log(
+        "Screen capture permission not granted. Please enable it in System Preferences."
+      );
+      shell.openExternal(
+        "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenRecording"
+      );
+    }
     mainWindow.show();
     createOverlayWindow();
   });
@@ -34,7 +52,7 @@ function createOverlayWindow() {
     height,
     frame: false,
     transparent: true,
-    fullscreen: true,
+    fullscreen: false,
     alwaysOnTop: true,
     skipTaskbar: true,
     movable: false,
