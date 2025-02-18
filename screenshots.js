@@ -47,10 +47,15 @@ class Screenshots extends EventEmitter {
               const timestamp = new Date().getTime();
               const screenshotPath = path.join(
                 __dirname,
-                "",
                 "uploads",
                 `screenshot_${timestamp}.png`
               );
+
+              // Create the uploads directory if it doesn't exist
+              if (!fs.existsSync(path.join(__dirname, "uploads"))) {
+                fs.mkdirSync(path.join(__dirname, "uploads"));
+              }
+
               fs.writeFile(screenshotPath, croppedImage.toPNG(), (error) => {
                 if (error) {
                   this.emit("cancel", error);

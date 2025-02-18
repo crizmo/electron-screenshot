@@ -16,16 +16,31 @@
       top: 0;
       left: 0;
     }
+    #controls {
+      position: absolute;
+      display: none;
+      gap: 10px;
+    }
+    button {
+      padding: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
   <canvas id="selectionCanvas"></canvas>
+  <div id="controls">
+    <button id="cancelButton">X</button>
+    <button id="saveButton">Save</button>
+  </div>
   <script>
     const canvas = document.getElementById('selectionCanvas');
+    const controls = document.getElementById('controls');
     const { ipcRenderer } = require('electron');
     const ctx = canvas.getContext('2d');
     let isDrawing = false;
-    let startX, startY;
+    let startX, startY, selectedArea;
 
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -34,6 +49,7 @@
       isDrawing = true;
       startX = e.clientX;
       startY = e.clientY;
+      controls.style.display = 'none';
     });
 
     canvas.addEventListener('mousemove', (e) => {
@@ -42,20 +58,31 @@
       const width = e.clientX - startX;
       const height = e.clientY - startY;
       ctx.strokeRect(startX, startY, width, height);
+      selectedArea = { x: startX, y: startY, width, height };
     });
 
     canvas.addEventListener('mouseup', (e) => {
       isDrawing = false;
-      const width = e.clientX - startX;
-      const height = e.clientY - startY;
-        ipcRenderer.send('area-selected', { x: startX, y: startY, width, height });
-    
+      if (selectedArea) {
+        controls.style.display = 'flex';
+        controls.style.left = `${e.clientX + 10}px`;
+        controls.style.top = `${e.clientY + 10}px`;
+      }
+    });
+
+    document.getElementById('cancelButton').addEventListener('click', () => {
+      ipcRenderer.send('cancel-selection');
+    });
+
+    document.getElementById('saveButton').addEventListener('click', () => {
+      if (selectedArea) {
+        ipcRenderer.send('area-selected', selectedArea);
+      }
     });
 
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
-        console.log('Escape');
-        window.close();
+        ipcRenderer.send('cancel-selection');
       }
     });
   </script>

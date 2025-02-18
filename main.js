@@ -4,6 +4,8 @@ const {
   BrowserWindow,
   screen,
   ipcMain,
+  systemPreferences,
+  shell,
 } = require("electron");
 const Screenshots = require("./screenshots");
 
@@ -25,19 +27,20 @@ app.on("ready", () => {
 
   mainWindow.loadFile("select_area.html");
 
-  globalShortcut.register("CommandOrControl+I", () => {
-    const { systemPreferences, shell } = require("electron");
-
-    // Check screen capture permission status:
-    const status = systemPreferences.getMediaAccessStatus("screen");
-    if (status !== "granted") {
-      // Inform the user and open the Screen Recording settings page
-      console.log(
-        "Screen capture permission not granted. Please enable it in System Preferences."
-      );
-      shell.openExternal(
-        "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenRecording"
-      );
+  globalShortcut.register("alt+q", () => {
+    if (process.platform === "darwin") {
+      // Check screen capture permission status on macOS:
+      const status = systemPreferences.getMediaAccessStatus("screen");
+      if (status !== "granted") {
+        // Inform the user and open the Screen Recording settings page
+        console.log(
+          "Screen capture permission not granted. Please enable it in System Preferences."
+        );
+        shell.openExternal(
+          "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenRecording"
+        );
+        return;
+      }
     }
     mainWindow.show();
     createOverlayWindow();
@@ -52,7 +55,7 @@ function createOverlayWindow() {
     height,
     frame: false,
     transparent: true,
-    fullscreen: false,
+    fullscreen: true,
     alwaysOnTop: true,
     skipTaskbar: true,
     movable: false,
@@ -80,4 +83,11 @@ ipcMain.on("area-selected", (event, args) => {
   screenshots.captureArea(args.x, args.y, args.width, args.height);
   console.log(args);
   overlayWindow.close();
+});
+
+ipcMain.on("cancel-selection", () => {
+  if (overlayWindow) {
+    console.log("Cancel selection");
+    overlayWindow.close();
+  }
 });
