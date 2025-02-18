@@ -42,7 +42,7 @@ The application uses Electron's desktopCapturer API for capturing screenshots.
 
 1. Create an `uploads` folder at the root of the project
 2. Launch the application.
-3. Capture a screenshot of the desired area or the entire screen by using the keyboard shortcut configured in [main.js](main.js) (Cmd + I)
+3. Capture a screenshot of the desired area or the entire screen by using the keyboard shortcut configured in [main.js](main.js) (Alt + I)
 
 > [!WARNING]
 > On macOS 10.15 Catalina or higher, capturing the user's screen requires the user's consent ([source](https://www.electronjs.org/docs/latest/api/desktop-capturer#methods))
